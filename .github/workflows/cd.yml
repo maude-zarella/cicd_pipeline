@@ -1,30 +1,38 @@
+# Nom du workflow (affiché dans GitHub Actions)
 name: CD pipeline
 
+# Déclencheur : se lance après l'exécution d'un autre workflow
 on:
   workflow_run:
-    workflows: ["CI pipeline"]  # Name of our CI workflow
+    workflows: ["CI pipeline"]   # Nom EXACT du workflow CI à écouter
     types:
-      - completed
+      - completed               # Déclenché à chaque fin d'exécution (succès ou échec)
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest      # Machine virtuelle Ubuntu
+
+    # Condition : ne s'exécute QUE si le CI s'est terminé avec succès
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     steps:
+      # Étape 1 : récupérer le code du dépôt
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Étape 2 : authentification à Docker Hub
       - name: Log in to Docker Hub
-        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0  # SHA précis (sécurité maximale)
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}   # Stocké dans les secrets GitHub
+          password: ${{ secrets.DOCKER_PASSWORD }}   # Jamais en clair dans le code
 
+      # Étape 3 : build et push de l'image Docker
       - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1
+        id: push                                      # Permet de référencer cette étape plus tard
+        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1  # SHA figé
         with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: jedha/calculator:latest
+          context: .                # Répertoire de build (racine du projet)
+          file: ./Dockerfile       # Chemin vers le Dockerfile
+          push: true               # Push automatique vers le registry
+          tags: jedha/calculator:latest   # Nom + tag de l'image Docker
