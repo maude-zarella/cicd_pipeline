@@ -72,7 +72,7 @@ jobs:
 
       # Étape 2 : scan de sécurité avec Trivy
       - name: Run Trivy vulnerability scanner in filesystem mode
-        uses: aquasecurity/trivy-action@b3dafe507ffa004210975439a1e6156b8ebb3f50
+        uses: aquasecurity/trivy-action@latest
         with:
           scan-type: 'fs'                    # Scan du filesystem (code + dépendances)
           scan-ref: '.'                      # Racine du projet
